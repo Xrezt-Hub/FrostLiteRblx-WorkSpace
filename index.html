@@ -54,6 +54,7 @@ input:focus,textarea:focus{outline:3px solid var(--ice)}
 .mini{flex:1;padding:11px;border-radius:12px;border:3px solid var(--ink);font:800 .95rem 'Bricolage Grotesque',sans-serif;cursor:pointer;background:var(--lime);box-shadow:3px 3px 0 var(--ink)}
 .mini:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}
 .mini.del{background:#fff;color:#c1121f;flex:0 0 auto}
+.tabs{display:flex;gap:8px;margin-bottom:12px}.tab{flex:1;padding:11px;border-radius:12px;border:3px solid var(--ink);background:#fff;font:800 .95rem 'Bricolage Grotesque',sans-serif;cursor:pointer}.tab.on{background:var(--ink);color:var(--lime);box-shadow:3px 3px 0 var(--green)}.hint{font-size:.85rem;color:#55555c;margin:-2px 0 10px;line-height:1.4}.badge{display:inline-block;font-size:.7rem;font-weight:800;padding:3px 9px;border-radius:999px;background:var(--lime);border:2px solid var(--ink);margin-left:8px;vertical-align:middle}.badge.raw{background:var(--ice)}
 .empty{margin-top:22px;font-weight:800;color:#55555c}
 @media(prefers-reduced-motion:reduce){*{animation:none!important}}
 </style>
@@ -96,10 +97,12 @@ input:focus,textarea:focus{outline:3px solid var(--ice)}
   <div class="me"><img id="pic" alt=""><span id="mail"></span></div>
 
   <div class="panel">
-   <h2>➕ Add a loadstring</h2>
+   <h2>➕ Add a script</h2>
+   <div class="tabs"><button class="tab on" id="tLoad" type="button">Loadstring</button><button class="tab" id="tRaw" type="button">Paste code</button></div>
    <input id="ttl" placeholder="Script name (e.g. Blox Fruits Hub)" maxlength="80">
-   <textarea id="cod" placeholder='loadstring(game:HttpGet("https://your-link/script.lua"))()' spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
-   <button class="btn" id="add">Save loadstring</button>
+   <textarea id="cod" spellcheck="false" autocapitalize="off" autocomplete="off" style="min-height:130px"></textarea>
+   <p class="hint" id="hint"></p>
+   <button class="btn" id="add">Save script</button>
   </div>
 
   <input id="q" placeholder="🔎 Search your scripts" style="margin-top:26px">
@@ -148,6 +151,11 @@ function unlock(p){
   $('chip').textContent = 'Unlocked';
   render();
 }
+let mode='load';
+function setMode(m){mode=m;$('tLoad').classList.toggle('on',m==='load');$('tRaw').classList.toggle('on',m==='raw');
+ $('cod').placeholder = m==='load' ? 'loadstring(game:HttpGet("https://your-link/script.lua"))()' : '-- Paste your full Lua code here\nprint("Hello 👑")';
+ $('hint').textContent = m==='load' ? 'Paste a full loadstring, or just the script link and I will wrap it for you.' : 'Paste any code. It is saved exactly as you typed it.';}
+$('tLoad').onclick=()=>setMode('load'); $('tRaw').onclick=()=>setMode('raw'); setMode('load');
 $('retry').onclick = () => location.reload();
 $('out').onclick = () => { try{sessionStorage.removeItem('fl');}catch(e){} location.reload(); };
 
@@ -167,7 +175,7 @@ function render(){
   }
   items.forEach(s => {
     const d = document.createElement('div'); d.className = 'item';
-    const h = document.createElement('h3'); h.textContent = '👑 ' + s.t;
+    const h = document.createElement('h3'); h.textContent = '👑 ' + s.t; const bd = document.createElement('span'); bd.className = 'badge' + (s.k==='raw'?' raw':''); bd.textContent = s.k==='raw' ? 'CODE' : 'LOADSTRING'; h.appendChild(bd);
     const c = document.createElement('div'); c.className = 'code'; c.textContent = s.c;
     const r = document.createElement('div'); r.className = 'row';
     const cp = document.createElement('button'); cp.className = 'mini'; cp.textContent = 'Copy';
@@ -182,9 +190,11 @@ function render(){
   });
 }
 $('add').onclick = () => {
-  const t = $('ttl').value.trim(), c = $('cod').value.trim();
-  if(!t || !c){ alert('Add a name and a loadstring first.'); return; }
-  const a = load(); a.unshift({id: Date.now() + '' + Math.random(), t, c}); save(a);
+  const t = $('ttl').value.trim(); let c = $('cod').value.trim();
+  if(!t || !c){ alert('Add a name and some code first.'); return; }
+  const a = load(); let k = mode==='raw' ? 'raw' : 'load';
+  if(k==='load' && /^https?:\/\/\S+$/i.test(c)) c = 'loadstring(game:HttpGet("' + c + '"))()';
+  a.unshift({id: Date.now() + '' + Math.random(), t, c, k}); save(a);
   $('ttl').value = ''; $('cod').value = ''; render();
 };
 $('q').oninput = render;

@@ -102,6 +102,9 @@ input:focus,textarea:focus{outline:3px solid var(--ice)}
    <input id="ttl" placeholder="Script name (e.g. Blox Fruits Hub)" maxlength="80">
    <textarea id="cod" spellcheck="false" autocapitalize="off" autocomplete="off" style="min-height:130px"></textarea>
    <p class="hint" id="hint"></p>
+   <div class="row" id="rawRow" style="display:none;margin-bottom:12px">
+     <button class="mini" id="obf" type="button" style="flex:0 0 auto;background:var(--gold)">✨ Obfuscate</button>
+   </div>
    <button class="btn" id="add">Save script</button>
   </div>
 
@@ -157,6 +160,8 @@ function setMode(m){mode=m;$('tLoad').classList.toggle('on',m==='load');$('tRaw'
  $('cod').placeholder = m==='load' ? 'loadstring(game:HttpGet("https://your-link/script.lua"))()' : '-- Paste your full Lua code here\nprint("Hello 👑")';
  $('hint').textContent = m==='load' ? 'Paste a full loadstring, or just the script link and I will wrap it for you.' : 'Paste any code. It is hosted and you get a short one-line loadstring to copy.';}
 $('tLoad').onclick=()=>setMode('load'); $('tRaw').onclick=()=>setMode('raw'); setMode('load');
+function syncRawRow(){ $('rawRow').style.display = mode === 'raw' ? 'flex' : 'none'; }
+const _setMode = setMode; setMode = (m) => { _setMode(m); syncRawRow(); }; syncRawRow();
 $('retry').onclick = () => location.reload();
 $('out').onclick = () => { try{sessionStorage.removeItem('fl');}catch(e){} location.reload(); };
 
@@ -209,6 +214,22 @@ function render(){
     r.appendChild(del); d.append(h, code, r); box.appendChild(d);
   });
 }
+$('obf').onclick = async () => {
+  const c = $('cod').value.trim();
+  if(!c){ alert('Paste some code first.'); return; }
+  if(!hosted()){ alert('The obfuscator needs the Worker set up first (WORKER_URL).'); return; }
+  const btn = $('obf'); const orig = btn.textContent; btn.textContent = 'Obfuscating…'; btn.disabled = true;
+  try{
+    const res = await fetch(WORKER_URL + '/obfuscate', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({token: tok(), code: c})});
+    const j = await res.json();
+    if(!res.ok) throw new Error(j.error || 'failed');
+    $('cod').value = j.obfuscated;
+    $('hint').textContent = 'Obfuscated ✓ — review it, then tap Save script.';
+  }catch(e){
+    alert('Could not obfuscate: ' + e.message + (e.message.includes('login') ? '' : '\nIf your login expired, tap "Lock the workspace" and sign in again.'));
+  }
+  btn.textContent = orig; btn.disabled = false;
+};
 $('add').onclick = async () => {
   const t = $('ttl').value.trim(); let c = $('cod').value.trim();
   if(!t || !c){ alert('Add a name and some code first.'); return; }

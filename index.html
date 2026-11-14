@@ -116,6 +116,7 @@ input:focus,textarea:focus{outline:3px solid var(--ice)}
 /* ====== EDIT THIS LINE ====== */
 const GOOGLE_CLIENT_ID = "903291748123-5craq9b0m5njbip757gadg7v24gn09a3.apps.googleusercontent.com";
 const OWNER_EMAIL = "asrobloxplayz@gmail.com";
+const WORKER_URL = "https://frostlite.asrobloxplayz.workers.dev"; // e.g. https://frostlite.yourname.workers.dev (no trailing slash)
 /* ============================ */
 
 const $ = id => document.getElementById(id);
@@ -154,7 +155,7 @@ function unlock(p){
 let mode='load';
 function setMode(m){mode=m;$('tLoad').classList.toggle('on',m==='load');$('tRaw').classList.toggle('on',m==='raw');
  $('cod').placeholder = m==='load' ? 'loadstring(game:HttpGet("https://your-link/script.lua"))()' : '-- Paste your full Lua code here\nprint("Hello 👑")';
- $('hint').textContent = m==='load' ? 'Paste a full loadstring, or just the script link and I will wrap it for you.' : 'Paste any code. Later you can copy it as plain code or as a ready-made loadstring.';}
+ $('hint').textContent = m==='load' ? 'Paste a full loadstring, or just the script link and I will wrap it for you.' : 'Paste any code. It is hosted and you get a short one-line loadstring to copy.';}
 $('tLoad').onclick=()=>setMode('load'); $('tRaw').onclick=()=>setMode('raw'); setMode('load');
 $('retry').onclick = () => location.reload();
 $('out').onclick = () => { try{sessionStorage.removeItem('fl');}catch(e){} location.reload(); };
@@ -164,51 +165,69 @@ const KEY = 'frostlite_loadstrings';
 function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || []; }catch(e){ return []; } }
 function save(a){ try{ localStorage.setItem(KEY, JSON.stringify(a)); }catch(e){ alert('Could not save in this browser.'); } }
 
-function toLoadstring(code){
+const hosted = () => !WORKER_URL.startsWith('PASTE');
+const tok = () => { try{ return sessionStorage.getItem('fl'); }catch(e){ return null; } };
+function inlineLS(code){
   let n = 0; while(code.includes(']' + '='.repeat(n) + ']')) n++;
   const eq = '='.repeat(n);
   return 'loadstring([' + eq + '[\n' + code + '\n]' + eq + '])()';
 }
+const lsOf = s => s.u ? 'loadstring(game:HttpGet("' + s.u + '"))()' : (s.k === 'raw' ? inlineLS(s.c) : s.c);
 async function copyText(txt){
   try{ await navigator.clipboard.writeText(txt); }
   catch(e){ const t = document.createElement('textarea'); t.value = txt; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); }
 }
+function mk(tag, cls, txt){ const e = document.createElement(tag); if(cls) e.className = cls; if(txt) e.textContent = txt; return e; }
+function flash(btn, label){ btn.textContent = 'Copied ✓'; setTimeout(() => btn.textContent = label, 1400); }
+
 function render(){
   const q = $('q').value.trim().toLowerCase();
   const items = load().filter(s => !q || s.t.toLowerCase().includes(q) || s.c.toLowerCase().includes(q));
   const box = $('list'); box.textContent = '';
   if(!items.length){
-    const e = document.createElement('p'); e.className = 'empty';
-    e.textContent = q ? 'No scripts match your search.' : 'No loadstrings yet. Add your first one above 👑';
-    box.appendChild(e); return;
+    box.appendChild(mk('p', 'empty', q ? 'No scripts match your search.' : 'No scripts yet. Add your first one above 👑')); return;
   }
   items.forEach(s => {
-    const d = document.createElement('div'); d.className = 'item';
-    const h = document.createElement('h3'); h.textContent = '👑 ' + s.t; const bd = document.createElement('span'); bd.className = 'badge' + (s.k==='raw'?' raw':''); bd.textContent = s.k==='raw' ? 'CODE' : 'LOADSTRING'; h.appendChild(bd);
-    const c = document.createElement('div'); c.className = 'code'; c.textContent = s.c;
-    const r = document.createElement('div'); r.className = 'row';
-    const cp = document.createElement('button'); cp.className = 'mini'; cp.textContent = 'Copy';
-    cp.onclick = async () => {
-      try{ await navigator.clipboard.writeText(s.c); }
-      catch(e){ const t = document.createElement('textarea'); t.value = s.c; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); }
-      const lbl = s.k === 'raw' ? 'Copy code' : 'Copy'; cp.textContent = 'Copied ✓'; setTimeout(() => cp.textContent = lbl, 1400);
-    };
-    const dl = document.createElement('button'); dl.className = 'mini del'; dl.textContent = 'Delete';
-    dl.onclick = () => { if(confirm('Delete "' + s.t + '"?')){ save(load().filter(x => x.id !== s.id)); render(); } };
+    const d = mk('div', 'item');
+    const h = mk('h3', '', '👑 ' + s.t); h.appendChild(mk('span', 'badge' + (s.k === 'raw' ? ' raw' : ''), s.k === 'raw' ? 'CODE' : 'LOADSTRING'));
+    const code = mk('div', 'code', s.k === 'raw' ? lsOf(s) : s.c);
+    const r = mk('div', 'row');
+    const main = mk('button', 'mini', s.k === 'raw' ? 'Copy loadstring' : 'Copy');
+    main.onclick = async () => { await copyText(lsOf(s)); flash(main, s.k === 'raw' ? 'Copy loadstring' : 'Copy'); };
+    r.appendChild(main);
     if(s.k === 'raw'){
-      cp.textContent = 'Copy code';
-      const lb = document.createElement('button'); lb.className = 'mini'; lb.style.background = 'var(--ice)'; lb.textContent = 'Copy as loadstring';
-      lb.onclick = async () => { await copyText(toLoadstring(s.c)); lb.textContent = 'Copied ✓'; setTimeout(() => lb.textContent = 'Copy as loadstring', 1400); };
-      r.append(cp, lb, dl);
-    } else r.append(cp, dl); d.append(h, c, r); box.appendChild(d);
+      const raw = mk('button', 'mini', 'Copy code'); raw.style.background = 'var(--ice)';
+      raw.onclick = async () => { await copyText(s.c); flash(raw, 'Copy code'); };
+      r.appendChild(raw);
+    }
+    const del = mk('button', 'mini del', 'Delete');
+    del.onclick = async () => {
+      if(!confirm('Delete "' + s.t + '"?')) return;
+      if(s.rid && hosted()){ try{ await fetch(WORKER_URL + '/delete', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({token: tok(), id: s.rid})}); }catch(e){} }
+      save(load().filter(x => x.id !== s.id)); render();
+    };
+    r.appendChild(del); d.append(h, code, r); box.appendChild(d);
   });
 }
-$('add').onclick = () => {
+$('add').onclick = async () => {
   const t = $('ttl').value.trim(); let c = $('cod').value.trim();
   if(!t || !c){ alert('Add a name and some code first.'); return; }
-  const a = load(); let k = mode==='raw' ? 'raw' : 'load';
-  if(k==='load' && /^https?:\/\/\S+$/i.test(c)) c = 'loadstring(game:HttpGet("' + c + '"))()';
-  a.unshift({id: Date.now() + '' + Math.random(), t, c, k}); save(a);
+  const k = mode === 'raw' ? 'raw' : 'load'; let u = '', rid = '';
+  if(k === 'load' && /^https?:\/\/\S+$/i.test(c)) c = 'loadstring(game:HttpGet("' + c + '"))()';
+  if(k === 'raw' && hosted()){
+    const btn = $('add'); btn.textContent = 'Saving…'; btn.disabled = true;
+    try{
+      const res = await fetch(WORKER_URL + '/save', {method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({token: tok(), code: c, title: t})});
+      const j = await res.json();
+      if(!res.ok) throw new Error(j.error || 'failed');
+      rid = j.id; u = WORKER_URL + '/raw/' + j.id;
+    }catch(e){
+      alert('Could not host the script: ' + e.message + '\nIf your login expired, tap "Lock the workspace" and sign in again.');
+      btn.textContent = 'Save script'; btn.disabled = false; return;
+    }
+    btn.textContent = 'Save script'; btn.disabled = false;
+  }
+  const a = load(); a.unshift({id: Date.now() + '' + Math.random(), t, c, k, u, rid}); save(a);
   $('ttl').value = ''; $('cod').value = ''; render();
 };
 $('q').oninput = render;

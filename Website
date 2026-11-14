@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FrostLiteRblx Workspace 👑</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👑</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,800&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<style>
+:root{--ink:#0b0b0e;--green:#17803d;--lime:#7dff9b;--gold:#ffc83d;--ice:#8fe3ff;--paper:#ebebee}
+*{box-sizing:border-box;margin:0}
+body{font-family:'Bricolage Grotesque',system-ui,sans-serif;background:var(--paper);color:var(--ink);overflow-x:hidden;min-height:100vh;
+ background-image:radial-gradient(#0001 1.5px,transparent 1.5px);background-size:22px 22px}
+.waves{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;opacity:.55}
+.crown{position:fixed;z-index:0;font-size:2rem;opacity:.25;animation:float 7s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-26px) rotate(12deg)}}
+header{position:relative;z-index:2;display:flex;align-items:center;justify-content:space-between;padding:14px 18px;background:#f7f7f7;border-bottom:3px solid var(--ink)}
+.logo{font-weight:800;font-size:1.05rem;letter-spacing:-.4px;display:flex;gap:8px;align-items:center;line-height:1.05}
+.logo small{display:block;color:var(--green);font-size:.72rem;letter-spacing:1px}
+.chip{background:var(--ink);color:var(--lime);padding:8px 14px;border-radius:10px;font-weight:800;font-size:.85rem;box-shadow:4px 4px 0 var(--green)}
+main{position:relative;z-index:1;max-width:680px;margin:0 auto;padding:40px 20px 60px;text-align:center}
+.king{font-size:5rem;display:inline-block;animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-12px) rotate(-6deg)}}
+h1{font-size:clamp(2.6rem,12vw,4.8rem);line-height:.92;letter-spacing:-.045em;font-weight:800;margin:10px 0 22px}
+h1 em{font-style:normal;color:var(--green);display:block}
+.sub{font-size:1.12rem;line-height:1.55;color:#33333a;margin-bottom:28px}
+.sub b{color:var(--ink)}
+.btn{display:block;width:100%;padding:16px;border-radius:18px;border:0;font:800 1.1rem 'Bricolage Grotesque',sans-serif;cursor:pointer;
+ background:var(--ink);color:#fff;box-shadow:7px 7px 0 var(--green);transition:transform .12s,box-shadow .12s}
+.btn:active{transform:translate(5px,5px);box-shadow:2px 2px 0 var(--green)}
+.btn.alt{background:#fff;color:var(--ink);border:3px solid #d9d9df;box-shadow:none}
+#gbtn{display:flex;justify-content:center;margin:0 auto 14px;min-height:44px}
+.status{font-weight:800;min-height:1.5em}
+.status.err{color:#c1121f;animation:shake .4s}
+@keyframes shake{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.locks{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:30px}
+.locks span{background:#fff;border:3px solid var(--ink);border-radius:999px;padding:8px 14px;font-weight:800;font-size:.85rem;box-shadow:3px 3px 0 var(--gold)}
+#vault,#denied{display:none}
+.me{display:inline-flex;gap:10px;align-items:center;background:#fff;border:3px solid var(--ink);border-radius:999px;padding:6px 16px 6px 6px;font-weight:800;box-shadow:4px 4px 0 var(--gold)}
+.me img{width:38px;height:38px;border-radius:50%}
+/* workspace */
+.panel{background:#fff;border:3px solid var(--ink);border-radius:22px;padding:18px;box-shadow:8px 8px 0 var(--green);text-align:left;margin-top:26px}
+.panel h2{font-size:1.4rem;letter-spacing:-.03em;margin-bottom:12px}
+input,textarea{width:100%;border:3px solid var(--ink);border-radius:14px;padding:12px 14px;font:500 1rem 'Bricolage Grotesque',sans-serif;background:#f7f7f9;margin-bottom:10px}
+textarea{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.85rem;min-height:96px;resize:vertical}
+input:focus,textarea:focus{outline:3px solid var(--ice)}
+.row{display:flex;gap:10px}
+.row .btn{margin:0}
+.item{background:#fff;border:3px solid var(--ink);border-radius:20px;padding:16px;margin-top:18px;box-shadow:6px 6px 0 var(--gold);text-align:left}
+.item:nth-child(even){box-shadow:6px 6px 0 var(--ice)}
+.item h3{font-size:1.2rem;letter-spacing:-.02em;margin-bottom:8px;word-break:break-word}
+.code{background:var(--ink);color:var(--lime);border-radius:12px;padding:12px;font:.8rem/1.5 ui-monospace,Menlo,Consolas,monospace;white-space:pre-wrap;word-break:break-all;max-height:140px;overflow:auto;margin-bottom:12px}
+.mini{flex:1;padding:11px;border-radius:12px;border:3px solid var(--ink);font:800 .95rem 'Bricolage Grotesque',sans-serif;cursor:pointer;background:var(--lime);box-shadow:3px 3px 0 var(--ink)}
+.mini:active{transform:translate(3px,3px);box-shadow:0 0 0 var(--ink)}
+.mini.del{background:#fff;color:#c1121f;flex:0 0 auto}
+.empty{margin-top:22px;font-weight:800;color:#55555c}
+@media(prefers-reduced-motion:reduce){*{animation:none!important}}
+</style>
+</head>
+<body>
+<svg class="waves" viewBox="0 0 400 800" preserveAspectRatio="none" aria-hidden="true">
+ <path d="M-20 90 Q80 20 160 90 T340 70 T440 120" fill="none" stroke="#c9c9d1" stroke-width="22" stroke-linecap="round"/>
+ <path d="M-20 420 Q100 340 200 430 T420 380" fill="none" stroke="#c9c9d1" stroke-width="22" stroke-linecap="round"/>
+ <path d="M-20 700 Q90 620 190 710 T430 660" fill="none" stroke="#c9c9d1" stroke-width="22" stroke-linecap="round"/>
+</svg>
+<span class="crown" style="top:14%;left:6%">👑</span>
+<span class="crown" style="top:46%;right:7%;animation-delay:-2s">👑</span>
+<span class="crown" style="bottom:10%;left:12%;animation-delay:-4s">👑</span>
+
+<header>
+ <div class="logo"><span style="font-size:1.8rem">👑</span><div>FrostLiteRblx<small>WORKSPACE</small></div></div>
+ <div class="chip" id="chip">Private</div>
+</header>
+
+<main>
+ <section id="gate">
+  <div class="king">👑</div>
+  <h1>The only workspace<em>that fits me.</em></h1>
+  <p class="sub"><b>Private by default.</b> Every visitor is checked and <b>locked out</b> unless they sign in with the one Gmail that owns this place.</p>
+  <div id="gbtn"></div>
+  <div class="status" id="status"></div>
+  <div class="locks"><span>🔒 One owner</span><span>📧 Gmail only</span><span>🚫 Everyone else out</span></div>
+ </section>
+
+ <section id="denied">
+  <div class="king">🚫</div>
+  <h1>You can't<em style="color:#c1121f">enter here.</em></h1>
+  <p class="sub">This workspace is <b>private</b> and belongs to its owner. <b id="badmail"></b> doesn't have access, so there's nothing for you to see.</p>
+  <button class="btn alt" id="retry">Go back</button>
+ </section>
+
+ <section id="vault">
+  <div class="king">👑</div>
+  <h1>Welcome back,<em id="name">King.</em></h1>
+  <div class="me"><img id="pic" alt=""><span id="mail"></span></div>
+
+  <div class="panel">
+   <h2>➕ Add a loadstring</h2>
+   <input id="ttl" placeholder="Script name (e.g. Blox Fruits Hub)" maxlength="80">
+   <textarea id="cod" placeholder='loadstring(game:HttpGet("https://your-link/script.lua"))()' spellcheck="false" autocapitalize="off" autocomplete="off"></textarea>
+   <button class="btn" id="add">Save loadstring</button>
+  </div>
+
+  <input id="q" placeholder="🔎 Search your scripts" style="margin-top:26px">
+  <div id="list"></div>
+
+  <button class="btn alt" id="out" style="margin-top:34px">Lock the workspace</button>
+ </section>
+</main>
+
+<script>
+/* ====== EDIT THIS LINE ====== */
+const GOOGLE_CLIENT_ID = "PASTE_YOUR_CLIENT_ID.apps.googleusercontent.com";
+const OWNER_EMAIL = "asrobloxplayz@gmail.com";
+/* ============================ */
+
+const $ = id => document.getElementById(id);
+const say = (t, err) => { const s = $('status'); s.textContent = t; s.className = 'status' + (err ? ' err' : ''); };
+function parseJwt(t){
+  const b = t.split('.')[1].replace(/-/g,'+').replace(/_/g,'/');
+  return JSON.parse(decodeURIComponent(atob(b).split('').map(c=>'%'+('00'+c.charCodeAt(0).toString(16)).slice(-2)).join('')));
+}
+
+/* ---- Google sign-in gate ---- */
+function onCredential(res){
+  try{
+    const p = parseJwt(res.credential);
+    const ok = p.aud === GOOGLE_CLIENT_ID && p.email_verified &&
+               p.email.toLowerCase() === OWNER_EMAIL.toLowerCase() && p.exp*1000 > Date.now();
+    if(!ok){
+      $('gate').style.display = 'none';
+      $('badmail').textContent = p.email || 'This account';
+      $('denied').style.display = 'block';
+      $('chip').textContent = 'Denied';
+      return;
+    }
+    try{ sessionStorage.setItem('fl', res.credential); }catch(e){}
+    unlock(p);
+  }catch(e){ say('⛔ Could not verify your sign-in.', true); }
+}
+function unlock(p){
+  $('name').textContent = (p.given_name || 'King') + ' 👑';
+  $('mail').textContent = p.email;
+  $('pic').src = p.picture || '';
+  $('gate').style.display = 'none';
+  $('vault').style.display = 'block';
+  $('chip').textContent = 'Unlocked';
+  render();
+}
+$('retry').onclick = () => location.reload();
+$('out').onclick = () => { try{sessionStorage.removeItem('fl');}catch(e){} location.reload(); };
+
+/* ---- Loadstring storage (this browser only) ---- */
+const KEY = 'frostlite_loadstrings';
+function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || []; }catch(e){ return []; } }
+function save(a){ try{ localStorage.setItem(KEY, JSON.stringify(a)); }catch(e){ alert('Could not save in this browser.'); } }
+
+function render(){
+  const q = $('q').value.trim().toLowerCase();
+  const items = load().filter(s => !q || s.t.toLowerCase().includes(q) || s.c.toLowerCase().includes(q));
+  const box = $('list'); box.textContent = '';
+  if(!items.length){
+    const e = document.createElement('p'); e.className = 'empty';
+    e.textContent = q ? 'No scripts match your search.' : 'No loadstrings yet. Add your first one above 👑';
+    box.appendChild(e); return;
+  }
+  items.forEach(s => {
+    const d = document.createElement('div'); d.className = 'item';
+    const h = document.createElement('h3'); h.textContent = '👑 ' + s.t;
+    const c = document.createElement('div'); c.className = 'code'; c.textContent = s.c;
+    const r = document.createElement('div'); r.className = 'row';
+    const cp = document.createElement('button'); cp.className = 'mini'; cp.textContent = 'Copy';
+    cp.onclick = async () => {
+      try{ await navigator.clipboard.writeText(s.c); }
+      catch(e){ const t = document.createElement('textarea'); t.value = s.c; document.body.appendChild(t); t.select(); document.execCommand('copy'); t.remove(); }
+      cp.textContent = 'Copied ✓'; setTimeout(() => cp.textContent = 'Copy', 1400);
+    };
+    const dl = document.createElement('button'); dl.className = 'mini del'; dl.textContent = 'Delete';
+    dl.onclick = () => { if(confirm('Delete "' + s.t + '"?')){ save(load().filter(x => x.id !== s.id)); render(); } };
+    r.append(cp, dl); d.append(h, c, r); box.appendChild(d);
+  });
+}
+$('add').onclick = () => {
+  const t = $('ttl').value.trim(), c = $('cod').value.trim();
+  if(!t || !c){ alert('Add a name and a loadstring first.'); return; }
+  const a = load(); a.unshift({id: Date.now() + '' + Math.random(), t, c}); save(a);
+  $('ttl').value = ''; $('cod').value = ''; render();
+};
+$('q').oninput = render;
+
+window.onload = () => {
+  try{
+    const t = sessionStorage.getItem('fl');
+    if(t){ const p = parseJwt(t);
+      if(p.exp*1000 > Date.now() && p.email.toLowerCase() === OWNER_EMAIL.toLowerCase()) return unlock(p); }
+  }catch(e){}
+  if(GOOGLE_CLIENT_ID.startsWith('PASTE')) return say('Setup needed: add your Google Client ID in the file.', true);
+  if(!window.google) return say('Google sign-in failed to load.', true);
+  google.accounts.id.initialize({client_id: GOOGLE_CLIENT_ID, callback: onCredential});
+  google.accounts.id.renderButton($('gbtn'), {theme:'filled_black', size:'large', shape:'pill', text:'signin_with', width:300});
+};
+</script>
+</body>
+</html>
